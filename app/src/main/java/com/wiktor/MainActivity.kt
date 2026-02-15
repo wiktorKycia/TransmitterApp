@@ -7,6 +7,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.widget.Button
 import android.widget.FrameLayout
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -40,6 +41,11 @@ class MainActivity : AppCompatActivity() {
             handleTouch(view, event, "#2196F3".toColorInt()) // Blue when pressed
             true
         }
+
+        // initialize textview
+        val textView = findViewById<TextView>(R.id.textView)
+
+
     }
 
     private fun handleTouch(view: View, event: MotionEvent, activeColor: Int) {

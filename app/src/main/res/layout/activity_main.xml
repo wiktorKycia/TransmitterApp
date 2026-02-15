@@ -1,47 +1,64 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/main"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:baselineAligned="false"
-    android:orientation="horizontal"
-    android:background="#000000">
+    android:id="@+id/main">
 
-    <!-- Left Half -->
-    <FrameLayout
-        android:id="@+id/btnLeft"
-        android:layout_width="0dp"
+    <LinearLayout
+        android:id="@+id/insidemain"
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:background="#222222"
-        android:layout_margin="2dp">
+        android:layout_gravity="center"
+        android:baselineAligned="false"
+        android:orientation="horizontal"
+        android:background="#000000">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text="LEFT"
-            android:textColor="#FFFFFF"
-            android:textStyle="bold" />
-    </FrameLayout>
+        <!-- Left Half -->
+        <FrameLayout
+            android:id="@+id/btnLeft"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="#222222"
+            android:layout_margin="2dp">
 
-    <!-- Right Half -->
-    <FrameLayout
-        android:id="@+id/btnRight"
-        android:layout_width="0dp"
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="LEFT"
+                android:textColor="#FFFFFF"
+                android:textStyle="bold" />
+        </FrameLayout>
+
+        <!-- Right Half -->
+        <FrameLayout
+            android:id="@+id/btnRight"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="#222222"
+            android:layout_margin="2dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="RIGHT"
+                android:textColor="#FFFFFF"
+                android:textStyle="bold" />
+        </FrameLayout>
+
+    </LinearLayout>
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:background="#222222"
-        android:layout_margin="2dp">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text="RIGHT"
-            android:textColor="#FFFFFF"
-            android:textStyle="bold" />
-    </FrameLayout>
-
-</LinearLayout>
+        android:layout_gravity="center"
+        android:text=""
+        android:textColor="#FFFFFF"
+        android:textStyle="bold"
+        android:textSize="24sp" />
+</FrameLayout>
