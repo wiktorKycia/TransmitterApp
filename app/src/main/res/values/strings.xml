@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">TransmitterApp</string>
+    <string name="left">LEFT</string>
+    <string name="right">RIGHT</string>
+</resources>
