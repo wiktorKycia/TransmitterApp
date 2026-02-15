@@ -51,7 +51,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         }
 
         // initialize textview
-        val textView = findViewById<TextView>(R.id.textView)
+        textView = findViewById<TextView>(R.id.textView)
 
         // init sensors
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
