@@ -24,7 +24,7 @@ import kotlin.math.roundToInt
 class MainActivity : AppCompatActivity(), SensorEventListener {
 
     // --- CONFIGURATION ---
-    private val DEST_IP = "192.168.1.100" // REPLACE WITH YOUR LINUX IP
+    private val DEST_IP = "192.168.1.74" // REPLACE WITH YOUR LINUX IP
     private val DEST_PORT = 5005
     // ---------------------
 
@@ -53,12 +53,19 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         val btnRight = findViewById<FrameLayout>(R.id.btnRight)
 
         btnLeft.setOnTouchListener { view, event ->
-            leftPressed = if (event.action == MotionEvent.ACTION_DOWN) 1 else 0
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> leftPressed = 1
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> leftPressed = 0
+            }
             handleTouch(view, event, "#4CAF50".toColorInt())
             true
         }
+
         btnRight.setOnTouchListener { view, event ->
-            rightPressed = if (event.action == MotionEvent.ACTION_DOWN) 1 else 0
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> rightPressed = 1
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> rightPressed = 0
+            }
             handleTouch(view, event, "#2196F3".toColorInt())
             true
         }
@@ -79,7 +86,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     override fun onResume() {
         super.onResume()
         rotationSensor?.let {
-            sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_GAME)
+            sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_GAME) // <- fastest, UI: 60Hz, NORMAL:5-10Hz
         }
     }
 
@@ -102,7 +109,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             textView.text = "Azimuth: $azimuth°\nPitch: $pitch°\nRoll: $roll°\nL: $leftPressed R: $rightPressed"
 
             // Send data via UDP
-            sendUdpData("ROT:$azimuth,$pitch,$roll;BTN:$leftPressed,$rightPressed")
+            sendUdpData("$pitch $leftPressed $rightPressed")
         }
     }
 
