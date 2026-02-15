@@ -1,5 +1,4 @@
 package com.wiktor
-
 import android.annotation.SuppressLint
 import android.content.Context
 import android.hardware.Sensor
@@ -16,13 +15,26 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.graphics.toColorInt
+import java.net.DatagramPacket
+import java.net.DatagramSocket
+import java.net.InetAddress
+import kotlin.concurrent.thread
 import kotlin.math.roundToInt
 
 class MainActivity : AppCompatActivity(), SensorEventListener {
 
+    // --- CONFIGURATION ---
+    private val DEST_IP = "192.168.1.100" // REPLACE WITH YOUR LINUX IP
+    private val DEST_PORT = 5005
+    // ---------------------
+
     private lateinit var sensorManager: SensorManager
     private var rotationSensor: Sensor? = null
     private lateinit var textView: TextView
+
+    private var udpSocket: DatagramSocket? = null
+    private var leftPressed = 0
+    private var rightPressed = 0
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -30,77 +42,89 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
 
-        // Handle edge-to-edge padding
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
 
-        // Initialize buttons
+        textView = findViewById<TextView>(R.id.textView)
         val btnLeft = findViewById<FrameLayout>(R.id.btnLeft)
         val btnRight = findViewById<FrameLayout>(R.id.btnRight)
 
         btnLeft.setOnTouchListener { view, event ->
-            handleTouch(view, event, "#4CAF50".toColorInt()) // Green when pressed
+            leftPressed = if (event.action == MotionEvent.ACTION_DOWN) 1 else 0
+            handleTouch(view, event, "#4CAF50".toColorInt())
             true
         }
         btnRight.setOnTouchListener { view, event ->
-            handleTouch(view, event, "#2196F3".toColorInt()) // Blue when pressed
+            rightPressed = if (event.action == MotionEvent.ACTION_DOWN) 1 else 0
+            handleTouch(view, event, "#2196F3".toColorInt())
             true
         }
 
-        // initialize textview
-        textView = findViewById<TextView>(R.id.textView)
-
-        // init sensors
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         rotationSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
 
+        // Initialize UDP Socket in a background thread
+        thread {
+            try {
+                udpSocket = DatagramSocket()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
     }
-    // register sensor when the app is active
+
     override fun onResume() {
         super.onResume()
         rotationSensor?.let {
-            sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_UI)
+            sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_GAME)
         }
     }
-    // unregister sensor when the app is in background
+
     override fun onPause() {
         super.onPause()
         sensorManager.unregisterListener(this)
     }
+
     override fun onSensorChanged(event: SensorEvent?) {
         if (event?.sensor?.type == Sensor.TYPE_ROTATION_VECTOR) {
             val rotationMatrix = FloatArray(9)
             SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values)
-
             val orientationValues = FloatArray(3)
             SensorManager.getOrientation(rotationMatrix, orientationValues)
 
-            // Convert radians to degrees
             val azimuth = Math.toDegrees(orientationValues[0].toDouble()).roundToInt()
             val pitch = Math.toDegrees(orientationValues[1].toDouble()).roundToInt()
             val roll = Math.toDegrees(orientationValues[2].toDouble()).roundToInt()
 
-            textView.text = "Rotation:\nAzimuth: $azimuth°\nPitch: $pitch°\nRoll: $roll°"
+            textView.text = "Azimuth: $azimuth°\nPitch: $pitch°\nRoll: $roll°\nL: $leftPressed R: $rightPressed"
+
+            // Send data via UDP
+            sendUdpData("ROT:$azimuth,$pitch,$roll;BTN:$leftPressed,$rightPressed")
         }
     }
 
-    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-        // Not needed for this app
+    private fun sendUdpData(message: String) {
+        thread {
+            try {
+                val address = InetAddress.getByName(DEST_IP)
+                val buf = message.toByteArray()
+                val packet = DatagramPacket(buf, buf.size, address, DEST_PORT)
+                udpSocket?.send(packet)
+            } catch (e: Exception) {
+                // Ignore network errors to prevent UI lag
+            }
+        }
     }
+
+    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
 
     private fun handleTouch(view: View, event: MotionEvent, activeColor: Int) {
         when (event.action) {
-            MotionEvent.ACTION_DOWN -> {
-                // Pressed
-                view.setBackgroundColor(activeColor)
-            }
-            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                // Released
-                view.setBackgroundColor("#222222".toColorInt())
-            }
+            MotionEvent.ACTION_DOWN -> view.setBackgroundColor(activeColor)
+            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> view.setBackgroundColor("#222222".toColorInt())
         }
     }
 }
