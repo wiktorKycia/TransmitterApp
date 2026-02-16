@@ -20,6 +20,8 @@ import java.net.DatagramSocket
 import java.net.InetAddress
 import kotlin.concurrent.thread
 import kotlin.math.roundToInt
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsControllerCompat
 
 class MainActivity : AppCompatActivity(), SensorEventListener {
 
@@ -40,6 +42,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        hideSystemUI()
         setContentView(R.layout.activity_main)
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
@@ -109,7 +112,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             textView.text = "Azimuth: $azimuth°\nPitch: $pitch°\nRoll: $roll°\nL: $leftPressed R: $rightPressed"
 
             // Send data via UDP
-            sendUdpData("$pitch $leftPressed $rightPressed")
+            sendUdpData("$azimuth $pitch $roll $leftPressed $rightPressed")
         }
     }
 
@@ -132,6 +135,24 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         when (event.action) {
             MotionEvent.ACTION_DOWN -> view.setBackgroundColor(activeColor)
             MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> view.setBackgroundColor("#222222".toColorInt())
+        }
+    }
+
+    private fun hideSystemUI() {
+        val windowInsetsController = androidx.core.view.WindowCompat.getInsetsController(window, window.decorView)
+
+        // Configure the behavior of the hidden system bars
+        windowInsetsController.systemBarsBehavior =
+            androidx.core.view.WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+
+        // Hide both the status bar and the navigation bar
+        windowInsetsController.hide(androidx.core.view.WindowInsetsCompat.Type.systemBars())
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus) {
+            hideSystemUI()
         }
     }
 }
